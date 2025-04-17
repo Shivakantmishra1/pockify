@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pockify Home</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    .menu-toggle {
+      display: none;
+      position: fixed;
+      top: 15px;
+      right: 15px;
+      font-size: 24px;
+      background: #1886c1;
+      color: white;
+      border: none;
+      z-index: 1000;
+      cursor: pointer;
+      padding: 5px 10px;
+      border-radius: 5px;
+    }
+
+    @media screen and (max-width: 768px) {
+      .menu-toggle {
+        display: block;
+      }
+
+      .container {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: -100%;
+        width: 70%;
+        height: 100%;
+        background-color: #131313;
+        transition: left 0.3s ease;
+        z-index: 999;
+        padding: 60px 20px 20px;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .sidebar.show {
+        left: 0;
+      }
+
+      .profile {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .profile img {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+
+      .nav {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .nav a {
+        color: white;
+        text-decoration: none;
+        font-size: 16px;
+      }
+
+      .logo {
+        margin-top: auto;
+        text-align: center;
+        font-weight: bold;
+        font-size: 18px;
+        color: #ccc;
+      }
+    }
+  </style>
+</head>
+<body>
+  <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+
+  <div class="container">
+    <aside class="sidebar">
+      <div class="profile">
+        <img src="shiva.jpg" alt="Profile Photo" />
+        <h3>Shivakant Mishra</h3>
+      </div>
+      <nav class="nav">
+        <a href="#" class="active">🏠 Home</a>
+        <a href="expenses.html">💸 Expenses</a>
+        <a href="split.html">🔀 Split</a>
+        <a href="setting.html">⚙️ Settings</a>
+        <a href="support.html">🛠️ Support</a>
+        <a href="login.html">🚪 Logout</a>
+      </nav>
+      <div class="logo">POCKIFY</div>
+    </aside>
+    <main class="main">
+      <h1>Home</h1>
+
+      <div class="summary-cards">
+        <div class="card">
+          <h3>Total Monthly Budget</h3>
+          <p id="budget">₹ 0</p>
+        </div>
+        <div class="card">
+          <h3>Expenses Made</h3>
+          <p id="expenses">₹ 0</p>
+        </div>
+        <div class="card">
+          <h3>Remaining</h3>
+          <p id="remaining">₹ 0</p>
+        </div>
+      </div>
+
+      <div class="quick-actions">
+        <button onclick="location.href='expenses.html'">➕ Add Expense</button>
+        <button onclick="location.href='split.html'">🔀 Split</button>
+        <button onclick="location.href='setting.html'">⚙️ Go to Settings</button>
+      </div>
+
+      <div class="charts">
+        <div class="chart-box">
+          <canvas id="monthlyChart"></canvas>
+        </div>
+        <div class="chart-box">
+          <canvas id="categoryChart"></canvas>
+        </div>
+      </div>
+    </main>
+  </div>
+  
+<script>
+  toggleSidebar = () => {
+    const sidebar = document.querySelector('.sidebar');
+    sidebar.classList.toggle('show');
+  };
+</script>
+  <script src="script.js"></script>
+</body>
+</html>

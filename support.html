@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pockify - Split</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .menu-toggle {
+      display: none;
+      position: fixed;
+      top: 15px;
+      right: 15px;
+      font-size: 24px;
+      background: #1886c1;
+      color: white;
+      border: none;
+      z-index: 1000;
+      cursor: pointer;
+      padding: 5px 10px;
+      border-radius: 5px;
+    }
+
+    @media screen and (max-width: 768px) {
+      .menu-toggle {
+        display: block;
+      }
+
+      .container {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: -100%;
+        width: 70%;
+        height: 100%;
+        background-color: #131313;
+        transition: left 0.3s ease;
+        z-index: 999;
+        padding: 60px 20px 20px;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .sidebar.show {
+        left: 0;
+      }
+
+      .profile {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .profile img {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+
+      .nav {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .nav a {
+        color: white;
+        text-decoration: none;
+        font-size: 16px;
+      }
+
+      .logo {
+        margin-top: auto;
+        text-align: center;
+        font-weight: bold;
+        font-size: 18px;
+        color: #ccc;
+      }
+    }
+  </style>
+</head>
+  <body>
+    <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+  
+    <div class="container">
+      <aside class="sidebar">
+        <div class="profile">
+          <img src="shiva.jpg" alt="Profile Photo" />
+          <h3>Shivakant Mishra</h3>
+        </div>
+        <nav class="nav">
+          <a href="index1.html">🏠 Home</a>
+          <a href="expenses.html" >💸 Expenses</a>
+          <a href="split.html">🔀 Split</a>
+          <a href="setting.html">⚙️ Settings</a>
+          <a href="#" class="active">🛠️ Support</a>
+          <a href="login.html">🚪 Logout</a>
+        </nav>
+        <div class="logo">POCKIFY</div>
+      </aside>
+
+    <!-- Main -->
+    <main class="main">
+      <h1>Support</h1>
+
+      <div class="support-section" style="
+        background: #1e1e2f;
+        padding: 30px;
+        border-radius: 10px;
+        max-width: 650px;
+        margin-top: 30px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      ">
+        <!-- FAQs -->
+        <section style="margin-bottom: 40px;">
+          <h2 style="color: #fff; margin-bottom: 15px;">🔍 Frequently Asked Questions</h2>
+          <ul style="color: #ccc; line-height: 1.8;">
+            <li>
+              <strong>How do I add an expense?</strong><br />
+              Simply go to the “Expenses” tab and click the “➕ Add Expense” button. A small form will appear where you can enter the date, what you spent on, and how much. Once submitted, it'll be saved and listed below.
+            </li>
+          
+            <li>
+              <strong>How do I split a bill with friends?</strong><br />
+              Visit the “Split” page, type in everyone's names and what percentage they owe, and then choose who paid the full amount. The app will calculate exactly who owes how much to whom—instantly!
+            </li>
+          
+            <li>
+              <strong>Where is my data stored?</strong><br />
+              All your expenses and splits are stored right in your browser using localStorage. That means it stays safe on your device and doesn’t get shared anywhere online.
+            </li>
+          
+            <li>
+              <strong>Can I reset or clear all data?</strong><br />
+              While there’s no built-in reset button yet, you can clear your data by opening your browser’s developer tools and clearing the localStorage manually. We’ll be adding a reset feature very soon to make this easier!
+            </li>
+          </ul>
+          
+        </section>
+
+        <!-- Contact Info -->
+        <section>
+          <h2 style="color: #fff; margin-bottom: 15px;">📞 Contact Information</h2>
+          <p style="color: #ccc; font-size: 16px; line-height: 1.6;">
+            <strong>Email:</strong> <a href="mailto:shivakantmishra1915@gmail.com" style="color: #4dabf7;">shivakantmishra1915@gmail.com</a><br />
+            <strong>Phone:</strong> +91 9720028490<br />
+          </p>
+        </section>
+      </div>
+    </main>
+  </div>
+  <script>
+
+    function toggleSidebar() {
+      const sidebar = document.querySelector('.sidebar');
+      sidebar.classList.toggle('show');
+    }
+
+  </script>
+</body>
+</html>

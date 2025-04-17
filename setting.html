@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pockify - Split</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .menu-toggle {
+      display: none;
+      position: fixed;
+      top: 15px;
+      right: 15px;
+      font-size: 24px;
+      background: #1886c1;
+      color: white;
+      border: none;
+      z-index: 1000;
+      cursor: pointer;
+      padding: 5px 10px;
+      border-radius: 5px;
+    }
+
+    @media screen and (max-width: 768px) {
+      .menu-toggle {
+        display: block;
+      }
+
+      .container {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: -100%;
+        width: 70%;
+        height: 100%;
+        background-color: #131313;
+        transition: left 0.3s ease;
+        z-index: 999;
+        padding: 60px 20px 20px;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .sidebar.show {
+        left: 0;
+      }
+
+      .profile {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .profile img {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+
+      .nav {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .nav a {
+        color: white;
+        text-decoration: none;
+        font-size: 16px;
+      }
+
+      .logo {
+        margin-top: auto;
+        text-align: center;
+        font-weight: bold;
+        font-size: 18px;
+        color: #ccc;
+      }
+    }
+  </style>
+</head>
+  <body>
+    <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+  
+    <div class="container">
+      <aside class="sidebar">
+        <div class="profile">
+          <img src="shiva.jpg" alt="Profile Photo" />
+          <h3>Shivakant Mishra</h3>
+        </div>
+        <nav class="nav">
+          <a href="index1.html">🏠 Home</a>
+          <a href="expenses.html" >💸 Expenses</a>
+          <a href="split.html">🔀 Split</a>
+          <a href="#" class="active">⚙️ Settings</a>
+          <a href="support.html">🛠️ Support</a>
+          <a href="login.html">🚪 Logout</a>
+        </nav>
+        <div class="logo">POCKIFY</div>
+      </aside>
+
+    <main class="main">
+      <h1>Settings</h1>
+
+      <div class="settings-section" style="
+          background: #1e1e2f;
+          padding: 30px;
+          border-radius: 10px;
+          max-width: 400px;
+          margin-top: 30px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        ">
+        <label for="pocketMoney" style="
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            font-size: 16px;
+            color: #ffffff;
+          ">
+          Monthly Pocket Money
+        </label>
+        
+        <input
+          type="number"
+          id="pocketMoney"
+          placeholder="i.e. ₹ 50,000"
+          style="
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border: none;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            background: #2c2c3f;
+            color: #fff;
+          "
+        />
+
+        <button
+          class="btn-primary"
+          onclick="savePocketMoney()"
+          style="width: 100%; font-weight: 500;"
+        >
+          💾 Save
+        </button>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    window.onload = () => {
+      const saved = localStorage.getItem('pocketMoney');
+      if (saved) document.getElementById('pocketMoney').value = saved;
+    };
+
+    function toggleSidebar() {
+      const sidebar = document.querySelector('.sidebar');
+      sidebar.classList.toggle('show');
+    }
+
+    function savePocketMoney() {
+      const amount = document.getElementById('pocketMoney').value;
+      if (amount && amount > 0) {
+        localStorage.setItem('pocketMoney', amount);
+        alert('Pocket money saved!');
+      } else {
+        alert('Please enter a valid amount.');
+      }
+    }
+  </script>
+</body>
+</html>

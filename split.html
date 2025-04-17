@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pockify - Split</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .menu-toggle {
+      display: none;
+      position: fixed;
+      top: 15px;
+      right: 15px;
+      font-size: 24px;
+      background: #1886c1;
+      color: white;
+      border: none;
+      z-index: 1000;
+      cursor: pointer;
+      padding: 5px 10px;
+      border-radius: 5px;
+    }
+
+    @media screen and (max-width: 768px) {
+      .menu-toggle {
+        display: block;
+      }
+
+      .container {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: -100%;
+        width: 70%;
+        height: 100%;
+        background-color: #131313;
+        transition: left 0.3s ease;
+        z-index: 999;
+        padding: 60px 20px 20px;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .sidebar.show {
+        left: 0;
+      }
+
+      .profile {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .profile img {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+
+      .nav {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .nav a {
+        color: white;
+        text-decoration: none;
+        font-size: 16px;
+      }
+
+      .logo {
+        margin-top: auto;
+        text-align: center;
+        font-weight: bold;
+        font-size: 18px;
+        color: #ccc;
+      }
+    }
+  </style>
+</head>
+  <body>
+    <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+  
+    <div class="container">
+      <aside class="sidebar">
+        <div class="profile">
+          <img src="shiva.jpg" alt="Profile Photo" />
+          <h3>Shivakant Mishra</h3>
+        </div>
+        <nav class="nav">
+          <a href="index1.html">🏠 Home</a>
+          <a href="expenses.html" >💸 Expenses</a>
+          <a href="#" class="active">🔀 Split</a>
+          <a href="setting.html">⚙️ Settings</a>
+          <a href="support.html">🛠️ Support</a>
+          <a href="login.html">🚪 Logout</a>
+        </nav>
+        <div class="logo">POCKIFY</div>
+      </aside>
+
+    <!-- Main Content -->
+    <main class="main">
+      <h1>Split an Expense</h1>
+
+      <div class="expense-form">
+        <form id="splitForm">
+          <div class="form-row">
+            <input type="text" id="expenseName" placeholder="Expense Name" required />
+            <input type="number" id="totalAmount" placeholder="Total Amount" required />
+          </div>
+
+          <h3 style="margin-top: 20px;">Names & Share (%)</h3>
+          <div id="peopleInputs"></div>
+
+          <button type="button" onclick="addPerson()" class="btn-primary" style="margin-top: 10px;">➕ Add Person</button>
+
+          <h3 style="margin-top: 20px;">Who Paid?</h3>
+          <select id="payerSelect" class="btn-primary" style="width: 100%; margin-top: 10px;"></select>
+
+          <button type="submit" class="btn-primary" style="margin-top: 20px;">Calculate</button>
+        </form>
+      </div>
+
+      <div class="expense-table" id="resultContainer" style="margin-top: 30px; display: none;">
+        <h3>Result</h3>
+        <div id="splitResults" style="margin-top: 10px;"></div>
+      </div>
+
+      <div class="expense-table" style="margin-top: 40px;">
+        <h3>Split History</h3>
+        <ul id="splitHistory" style="margin-top: 10px;"></ul>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const MAX_USERS = 8;
+
+    function toggleSidebar() {
+      const sidebar = document.querySelector('.sidebar');
+      sidebar.classList.toggle('show');
+    }
+  
+
+
+    function createPersonRow(name = '', share = '') {
+      const div = document.createElement("div");
+      div.className = "form-row";
+
+      const nameInput = document.createElement("input");
+      nameInput.type = "text";
+      nameInput.placeholder = "Name";
+      nameInput.className = "name-input";
+      nameInput.required = true;
+      nameInput.value = name;
+      nameInput.oninput = updatePayerOptions;
+
+      const shareInput = document.createElement("input");
+      shareInput.type = "number";
+      shareInput.placeholder = "Share (%)";
+      shareInput.className = "share-input";
+      shareInput.required = true;
+      shareInput.value = share;
+
+      const deleteBtn = document.createElement("button");
+      deleteBtn.type = "button";
+      deleteBtn.className = "delete-btn";
+      deleteBtn.textContent = "🗑️";
+      deleteBtn.onclick = () => {
+        div.remove();
+        updatePayerOptions();
+      };
+
+      div.appendChild(nameInput);
+      div.appendChild(shareInput);
+      div.appendChild(deleteBtn);
+      return div;
+    }
+
+    function addPerson() {
+      const peopleInputs = document.getElementById("peopleInputs");
+      if (peopleInputs.children.length >= MAX_USERS) {
+        alert("Max 8 users allowed!");
+        return;
+      }
+      const personRow = createPersonRow();
+      peopleInputs.appendChild(personRow);
+      updatePayerOptions();
+    }
+
+    function updatePayerOptions() {
+      const names = Array.from(document.querySelectorAll(".name-input")).map(el => el.value.trim()).filter(Boolean);
+      const payerSelect = document.getElementById("payerSelect");
+      payerSelect.innerHTML = '';
+      names.forEach(name => {
+        const option = document.createElement("option");
+        option.value = name;
+        option.textContent = name;
+        payerSelect.appendChild(option);
+      });
+    }
+
+    function renderSplitHistory() {
+      const historyList = document.getElementById("splitHistory");
+      const splitHistory = JSON.parse(localStorage.getItem("splitHistory") || "[]");
+
+      historyList.innerHTML = '';
+      splitHistory.forEach(entry => {
+        const li = document.createElement("li");
+        li.innerHTML = `<strong>${entry.name}</strong> of ₹${entry.total} by ${entry.payer} <br><small>${entry.time}</small>`;
+        historyList.appendChild(li);
+      });
+    }
+
+    document.getElementById("splitForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const totalAmount = parseFloat(document.getElementById("totalAmount").value);
+      const expenseName = document.getElementById("expenseName").value.trim();
+      const names = Array.from(document.querySelectorAll(".name-input")).map(el => el.value.trim());
+      const shares = Array.from(document.querySelectorAll(".share-input")).map(el => parseFloat(el.value));
+      const payer = document.getElementById("payerSelect").value;
+
+      if (names.length !== shares.length || shares.reduce((a, b) => a + b, 0) !== 100) {
+        alert("Ensure all fields are filled and total share is exactly 100%");
+        return;
+      }
+
+      const amounts = shares.map(s => (s / 100) * totalAmount);
+      const payerIndex = names.indexOf(payer);
+      const resultHTML = names.map((name, i) => {
+        if (i === payerIndex) return '';
+        const owed = amounts[i].toFixed(2);
+        return `<p>${name} owes ${payer} ₹${owed}</p>`;
+      }).filter(Boolean).join('');
+
+      document.getElementById("splitResults").innerHTML = resultHTML;
+      document.getElementById("resultContainer").style.display = "block";
+
+      const splitHistory = JSON.parse(localStorage.getItem("splitHistory") || "[]");
+      splitHistory.unshift({
+        name: expenseName,
+        total: totalAmount,
+        payer,
+        people: names,
+        shares,
+        time: new Date().toLocaleString()
+      });
+      localStorage.setItem("splitHistory", JSON.stringify(splitHistory));
+      renderSplitHistory();
+
+      // Reset form
+      this.reset();
+      document.getElementById("peopleInputs").innerHTML = '';
+      addPerson(); addPerson();
+      updatePayerOptions();
+    });
+
+    // On load setup
+    window.onload = () => {
+      renderSplitHistory();
+      addPerson();
+      addPerson();
+    };
+  </script>
+</body>
+</html>
