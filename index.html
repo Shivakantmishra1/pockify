@@ -90,35 +90,41 @@
     </div>
   </div>
 
-  <script>
-    document.getElementById("signupForm").addEventListener("submit", function(e) {
-      e.preventDefault();
+  <!-- Add this to the script section -->
+<script>
+  document.getElementById("signupForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
 
-      const name = document.getElementById("signupName").value.trim();
-      const email = document.getElementById("signupEmail").value.trim();
-      const password = document.getElementById("signupPassword").value;
-      const confirmPassword = document.getElementById("confirmPassword").value;
+    const name = document.getElementById("signupName").value.trim();
+    const email = document.getElementById("signupEmail").value.trim();
+    const password = document.getElementById("signupPassword").value;
+    const confirmPassword = document.getElementById("confirmPassword").value;
 
-      if (!name || !email || !password || !confirmPassword) {
-        alert("All fields are required.");
-        return;
+    if (password !== confirmPassword) {
+      alert("Passwords do not match");
+      return;
+    }
+
+    try {
+      const response = await fetch("https://pockify-backend.onrender.com/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert("Account created successfully!");
+        window.location.href = "login.html";
+      } else {
+        alert(data.message || "Registration failed");
       }
-
-      if (password !== confirmPassword) {
-        alert("Passwords do not match");
-        return;
-      }
-
-      if (localStorage.getItem(email)) {
-        alert("User already exists with this email.");
-        return;
-      }
-
-      const user = { name, email, password };
-      localStorage.setItem(email, JSON.stringify(user));
-      alert("Account created successfully!");
-      window.location.href = "login.html";
-    });
-  </script>
+    } catch (err) {
+      alert("Server error. Please try again later.");
+      console.error(err);
+    }
+  });
+</script>
 </body>
 </html>
