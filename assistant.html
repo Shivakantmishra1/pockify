@@ -104,6 +104,32 @@
       .assistant-container {
         margin-left: 0;
         padding: 20px;
+        width: 100%;
+      }
+      
+      .assistant-box {
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 0 10px rgba(0, 255, 204, 0.2);
+        width: 100%;
+      }
+
+      .mic-button {
+        padding: 10px 20px;
+        font-size: 16px;
+      }
+
+      #voice-text {
+        font-size: 16px;
+      }
+
+      #parsed-output {
+        font-size: 16px;
+        padding: 12px;
+      }
+
+      #expense-list li {
+        font-size: 14px;
       }
     }
 
@@ -212,7 +238,6 @@
     </main>
   </div>
 
-  
   <script>
   function toggleSidebar() {
     document.getElementById("sidebar").classList.toggle("show");
@@ -245,71 +270,70 @@
   }
 
   // Save expense to localStorage in a unified format
-function parseExpense(input) {
-  const amountMatch = input.match(/\d+/);
-  const categoryMatch = input.match(/for\s+(.+)/i);
-  const amount = amountMatch ? parseInt(amountMatch[0]) : 0;
-  const category = categoryMatch ? categoryMatch[1] : 'Uncategorized';
+  function parseExpense(input) {
+    const amountMatch = input.match(/\d+/);
+    const categoryMatch = input.match(/for\s+(.+)/i);
+    const amount = amountMatch ? parseInt(amountMatch[0]) : 0;
+    const category = categoryMatch ? categoryMatch[1] : 'Uncategorized';
 
-  if (amount > 0) {
-    const expense = {
-      amount,
-      category,
-      date: new Date().toISOString(),
-      source: 'voice',  // Helps you track if the expense was added via voice
-    };
+    if (amount > 0) {
+      const expense = {
+        amount,
+        category,
+        date: new Date().toISOString(),
+        source: 'voice',  // Helps you track if the expense was added via voice
+      };
 
-    // Get all existing expenses
-    const expenses = JSON.parse(localStorage.getItem('expenses') || '[]');
-    expenses.push(expense);
-    
-    // Save back to localStorage
-    localStorage.setItem('expenses', JSON.stringify(expenses));
+      // Get all existing expenses
+      const expenses = JSON.parse(localStorage.getItem('expenses') || '[]');
+      expenses.push(expense);
+      
+      // Save back to localStorage
+      localStorage.setItem('expenses', JSON.stringify(expenses));
 
-    document.getElementById("parsed-output").innerHTML =
-      `<strong>Expense Saved</strong><br>Amount: ₹${amount}<br>Category: ${category}`;
-    
-    speak(`✅ Expense of ₹${amount} for ${category} saved successfully!`);
-    loadExpenses();  // Update the expense list on the voice assistant page
-  } else {
-    const error = "⚠️ Could not understand the expense.";
-    document.getElementById("parsed-output").textContent = error;
-    speak(error);
+      document.getElementById("parsed-output").innerHTML =
+        `<strong>Expense Saved</strong><br>Amount: ₹${amount}<br>Category: ${category}`;
+      
+      speak(`✅ Expense of ₹${amount} for ${category} saved successfully!`);
+      loadExpenses();  // Update the expense list on the voice assistant page
+    } else {
+      const error = "⚠️ Could not understand the expense.";
+      document.getElementById("parsed-output").textContent = error;
+      speak(error);
+    }
   }
-}
 
-// Load expenses from localStorage
-function loadExpenses() {
-  const expenseList = document.getElementById("expense-list");
-  expenseList.innerHTML = '';
+  // Load expenses from localStorage
+  function loadExpenses() {
+    const expenseList = document.getElementById("expense-list");
+    expenseList.innerHTML = '';
 
-  // Get all expenses from localStorage
-  const expenses = JSON.parse(localStorage.getItem('expenses') || '[]');
-  
-  expenses.reverse().forEach((expense, index) => {
-    const { amount, category, date } = expense;
-    const li = document.createElement("li");
-    li.innerHTML = `
-      <span>₹${amount}</span> for <strong>${category}</strong>
-      <small>(${new Date(date).toLocaleString()})</small>
-      <button onclick="deleteExpense(${index})" style="margin-left:10px; background:black; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">🗑️ Delete</button>
-    `;
-    expenseList.appendChild(li);
-  });
-}
+    // Get all expenses from localStorage
+    const expenses = JSON.parse(localStorage.getItem('expenses') || '[]');
+    
+    expenses.reverse().forEach((expense, index) => {
+      const { amount, category, date } = expense;
+      const li = document.createElement("li");
+      li.innerHTML = `
+        <span>₹${amount}</span> for <strong>${category}</strong>
+        <small>(${new Date(date).toLocaleString()})</small>
+        <button onclick="deleteExpense(${index})" style="margin-left:10px; background:black; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">🗑️ Delete</button>
+      `;
+      expenseList.appendChild(li);
+    });
+  }
 
-// Delete expense
-function deleteExpense(index) {
-  let expenses = JSON.parse(localStorage.getItem('expenses') || '[]');
-  expenses.splice(expenses.length - 1 - index, 1); // because we reversed
-  localStorage.setItem('expenses', JSON.stringify(expenses));
-  loadExpenses();
-}
+  // Delete expense
+  function deleteExpense(index) {
+    let expenses = JSON.parse(localStorage.getItem('expenses') || '[]');
+    expenses.splice(expenses.length - 1 - index, 1); // because we reversed
+    localStorage.setItem('expenses', JSON.stringify(expenses));
+    loadExpenses();
+  }
 
-// On page load, load all expenses
-window.onload = loadExpenses;
+  // On page load, load all expenses
+  window.onload = loadExpenses;
 
-</script>
-
+  </script>
 </body>
 </html>
