@@ -32,7 +32,7 @@
     <aside class="sidebar">
       <div class="profile">
         <img src="shiva.jpg" alt="Profile Photo" />
-        <h3>Shivakant Mishra</h3>
+        <h3></h3>
       </div>
       <nav class="nav">
         <a href="index1.html">🏠 Home</a>
@@ -231,7 +231,13 @@
         pdf.save('Pockify_Expenses.pdf');
       });
     }
-  
+
+    // Sidebar toggle function
+    function toggleSidebar() {
+      const sidebar = document.querySelector('.sidebar');
+      sidebar.classList.toggle('show');
+    }
+
     renderExpenses();
   </script>
   
