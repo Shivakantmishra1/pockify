@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>Pockify Assistant</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #0d1117;
+      color: #fff;
+    }
+
+    .container {
+      display: flex;
+      min-height: 100vh;
+      flex-direction: row;
+    }
+
+    .menu-toggle {
+      display: none;
+      position: fixed;
+      top: 15px;
+      right: 15px;
+      font-size: 24px;
+      background: #1886c1;
+      color: white;
+      border: none;  
+      z-index: 1000;
+      cursor: pointer;
+      padding: 5px 10px;
+      border-radius: 5px;
+    }
+
+    @media screen and (max-width: 768px) {
+      .menu-toggle {
+        display: block;
+      }
+
+      .container {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: -100%;
+        width: 70%;
+        height: 100%;
+        background-color: #131313;
+        transition: left 0.3s ease;
+        z-index: 999;
+        padding: 60px 20px 20px;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .sidebar.show {
+        left: 0;
+      }
+
+      .profile {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .profile img {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+
+      .nav {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .nav a {
+        color: white;
+        text-decoration: none;
+        font-size: 16px;
+      }
+
+      .logo {
+        margin-top: auto;
+        text-align: center;
+        font-weight: bold;
+        font-size: 18px;
+        color: #ccc;
+      }
+
+      .assistant-container {
+        margin-left: 0;
+        padding: 20px;
+      }
+    }
+
+    .assistant-container {
+      flex: 1;
+      margin-left: 250px;
+      padding: 40px 20px;
+      display: flex;
+      justify-content: flex-start;
+      align-items: flex-start;
+    }
+
+    .assistant-box {
+      background-color: #161b22;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0, 255, 204, 0.2);
+      max-width: 700px;
+      width: 100%;
+    }
+
+    h1 {
+      font-size: 28px;
+      color: #00ffcc;
+    }
+
+    .mic-button {
+      margin-top: 20px;
+      padding: 12px 24px;
+      background-color: #00ffcc;
+      color: #000;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    .mic-button:hover {
+      background-color: #00ddb3;
+    }
+
+    #voice-text {
+      margin-top: 20px;
+      font-size: 18px;
+    }
+
+    #parsed-output {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #222;
+      border-radius: 8px;
+      color: #00ffcc;
+    }
+
+    #expense-list {
+      margin-top: 20px;
+      list-style: none;
+      padding: 0;
+      color: #ccc;
+    }
+
+    #expense-list li {
+      margin-bottom: 10px;
+    }
+
+    #expense-list small {
+      color: #777;
+    }
+  </style>
+</head>
+<body>
+  <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+
+  <div class="container">
+    <aside class="sidebar" id="sidebar">
+      <div>
+        <div class="profile">
+          <img src="shiva.jpg" alt="Profile" />
+          <h3>Shivakant Mishra</h3>
+        </div>
+        <nav class="nav">
+          <a href="index1.html">🏠 Home</a>
+          <a href="expenses.html">💸 Expenses</a>
+          <a href="split.html">🔀 Split</a>
+          <a href="setting.html">⚙️ Settings</a>
+          <a href="support.html">🛠️ Support</a>
+          <a href="#" class="active">🤖 AI Assist</a>
+          <a href="login.html">🚪 Logout</a>
+        </nav>
+      </div>
+      <div class="logo">POCKIFY</div>
+    </aside>
+
+    <main class="assistant-container">
+      <div class="assistant-box">
+        <h1>🤖 Pockify Assistant</h1>
+        <p>Tap the mic and say something like: “Add 300 for groceries”, “Add 5000 for Rent”</p>
+        <button class="mic-button" onclick="startListening()">🎙️ Start Speaking</button>
+        <div id="voice-text">Waiting for input...</div>
+        <div id="parsed-output"></div>
+
+        <h2 style="margin-top: 40px; color: #00ffcc;">📜 Previous Expenses</h2>
+        <ul id="expense-list"></ul>
+      </div>
+    </main>
+  </div>
+
+  
+  <script>
+  function toggleSidebar() {
+    document.getElementById("sidebar").classList.toggle("show");
+  }
+
+  function startListening() {
+    try {
+      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      recognition.lang = 'en-IN';
+      recognition.start();
+
+      document.getElementById("voice-text").textContent = "🎧 Listening...";
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        document.getElementById("voice-text").textContent = `You said: "${transcript}"`;
+        parseExpense(transcript);
+      };
+
+      recognition.onerror = (event) => {
+        const msg = "❌ Error: " + event.error;
+        document.getElementById("voice-text").textContent = msg;
+        speak(msg);
+      };
+    } catch (err) {
+      const error = "Speech Recognition not supported in this browser.";
+      document.getElementById("voice-text").textContent = error;
+      speak(error);
+    }
+  }
+
+  // Save expense to localStorage in a unified format
+function parseExpense(input) {
+  const amountMatch = input.match(/\d+/);
+  const categoryMatch = input.match(/for\s+(.+)/i);
+  const amount = amountMatch ? parseInt(amountMatch[0]) : 0;
+  const category = categoryMatch ? categoryMatch[1] : 'Uncategorized';
+
+  if (amount > 0) {
+    const expense = {
+      amount,
+      category,
+      date: new Date().toISOString(),
+      source: 'voice',  // Helps you track if the expense was added via voice
+    };
+
+    // Get all existing expenses
+    const expenses = JSON.parse(localStorage.getItem('expenses') || '[]');
+    expenses.push(expense);
+    
+    // Save back to localStorage
+    localStorage.setItem('expenses', JSON.stringify(expenses));
+
+    document.getElementById("parsed-output").innerHTML =
+      `<strong>Expense Saved</strong><br>Amount: ₹${amount}<br>Category: ${category}`;
+    
+    speak(`✅ Expense of ₹${amount} for ${category} saved successfully!`);
+    loadExpenses();  // Update the expense list on the voice assistant page
+  } else {
+    const error = "⚠️ Could not understand the expense.";
+    document.getElementById("parsed-output").textContent = error;
+    speak(error);
+  }
+}
+
+// Load expenses from localStorage
+function loadExpenses() {
+  const expenseList = document.getElementById("expense-list");
+  expenseList.innerHTML = '';
+
+  // Get all expenses from localStorage
+  const expenses = JSON.parse(localStorage.getItem('expenses') || '[]');
+  
+  expenses.reverse().forEach((expense, index) => {
+    const { amount, category, date } = expense;
+    const li = document.createElement("li");
+    li.innerHTML = `
+      <span>₹${amount}</span> for <strong>${category}</strong>
+      <small>(${new Date(date).toLocaleString()})</small>
+      <button onclick="deleteExpense(${index})" style="margin-left:10px; background:black; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">🗑️ Delete</button>
+    `;
+    expenseList.appendChild(li);
+  });
+}
+
+// Delete expense
+function deleteExpense(index) {
+  let expenses = JSON.parse(localStorage.getItem('expenses') || '[]');
+  expenses.splice(expenses.length - 1 - index, 1); // because we reversed
+  localStorage.setItem('expenses', JSON.stringify(expenses));
+  loadExpenses();
+}
+
+// On page load, load all expenses
+window.onload = loadExpenses;
+
+</script>
+
+</body>
+</html>
