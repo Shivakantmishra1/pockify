@@ -3,93 +3,31 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-  <title>Pockify expenes</title>
+  <title>Pockify Expenses</title>
   <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
-    .menu-toggle {
-      display: none;
-      position: fixed;
-      top: 15px;
-      right: 15px;
-      font-size: 24px;
-      background: #1886c1;
-      color: white;
-      border: none;
-      z-index: 1000;
-      cursor: pointer;
-      padding: 5px 10px;
-      border-radius: 5px;
-    }
-
+    .menu-toggle { display: none; position: fixed; top: 15px; right: 15px; font-size: 24px; background: #1886c1; color: white; border: none; z-index: 1000; cursor: pointer; padding: 5px 10px; border-radius: 5px; }
     @media screen and (max-width: 768px) {
-      .menu-toggle {
-        display: block;
-      }
-
-      .container {
-        flex-direction: column;
-      }
-
-      .sidebar {
-        position: fixed;
-        top: 0;
-        left: -100%;
-        width: 70%;
-        height: 100%;
-        background-color: #131313;
-        transition: left 0.3s ease;
-        z-index: 999;
-        padding: 60px 20px 20px;
-        color: white;
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-      }
-
-      .sidebar.show {
-        left: 0;
-      }
-
-      .profile {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 10px;
-      }
-
-      .profile img {
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        object-fit: cover;
-      }
-
-      .nav {
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-      }
-
-      .nav a {
-        color: white;
-        text-decoration: none;
-        font-size: 16px;
-      }
-
-      .logo {
-        margin-top: auto;
-        text-align: center;
-        font-weight: bold;
-        font-size: 18px;
-        color: #ccc;
-      }
+      .menu-toggle { display: block; }
+      .container { flex-direction: column; }
+      .sidebar { position: fixed; top: 0; left: -100%; width: 70%; height: 100%; background-color: #131313; transition: left 0.3s ease; z-index: 999; padding: 60px 20px 20px; color: rgb(48, 40, 40); display: flex; flex-direction: column; gap: 20px; }
+      .sidebar.show { left: 0; }
+      .profile { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+      .profile img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; }
+      .nav { display: flex; flex-direction: column; gap: 15px; }
+      .nav a { color: rgb(239, 223, 223); text-decoration: none; font-size: 16px; }
+      .logo { margin-top: auto; text-align: center; font-weight: bold; font-size: 18px; color: #ccc; }
     }
+    .expense-table { margin-top: 20px; }
+    .total-bar { margin-top: 20px; display: flex; justify-content: space-between; font-size: 18px; font-weight: bold; }
   </style>
 </head>
 <body>
   <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
-
   <div class="container">
     <aside class="sidebar">
       <div class="profile">
@@ -102,13 +40,13 @@
         <a href="split.html">🔀 Split</a>
         <a href="setting.html">⚙️ Settings</a>
         <a href="support.html">🛠️ Support</a>
+        <a href="assistant.html" >🤖 Ai Assist</a>
         <a href="login.html">🚪 Logout</a>
       </nav>
       <div class="logo">POCKIFY</div>
     </aside>
     <main class="main">
       <h1>Expenses</h1>
-
       <button class="btn-primary" id="showFormBtn">➕ Add Expense</button>
 
       <div class="expense-form" id="expenseForm" style="display: none;">
@@ -126,6 +64,7 @@
               <option value="Transport">Transport</option>
               <option value="Entertainment">Entertainment</option>
               <option value="Utilities">Utilities</option>
+              <option value="Tapri">Tapri</option>
               <option value="Other">Other</option>
             </select>
             <input type="number" id="amount" placeholder="Amount" required />
@@ -134,8 +73,16 @@
         </form>
       </div>
 
+      <div style="margin: 15px 0; display: flex; gap: 10px; flex-wrap: wrap;">
+        <button onclick="filterView('all')">All</button>
+        <button onclick="filterView('weekly')">This Week</button>
+        <button onclick="filterView('monthly')">This Month</button>
+        <button onclick="filterView('voice')">Voice Expenses</button>
+        <button onclick="exportPDF()">Export PDF</button>
+      </div>
+
       <div class="expense-table">
-        <table>
+        <table id="expenseTable">
           <thead>
             <tr>
               <th>Date</th>
@@ -145,9 +92,7 @@
               <th>Action</th>
             </tr>
           </thead>
-          <tbody id="expenseList">
-            <!-- Dynamic entries appear here -->
-          </tbody>
+          <tbody id="expenseList"></tbody>
         </table>
       </div>
 
@@ -155,72 +100,140 @@
         <span>Total Expenses:</span>
         <span>₹0</span>
       </div>
+
+      <canvas id="categoryChart" style="max-width: 600px; margin-top: 20px;"></canvas>
     </main>
   </div>
 
   <script>
-    function toggleSidebar() {
-      document.querySelector('.sidebar').classList.toggle('show');
-    }
-
-    const expenseForm = document.getElementById('addExpenseForm');
+    let expenses = JSON.parse(localStorage.getItem('expenses') || '[]');
+    const expenseFormEl = document.getElementById('addExpenseForm');
     const expenseList = document.getElementById('expenseList');
     const totalSummary = document.getElementById('totalSummary').querySelector('span:last-child');
-    let expenses = JSON.parse(localStorage.getItem('expenses')) || [];
-
+    let currentFilter = 'all';
+  
     function saveExpenses() {
       localStorage.setItem('expenses', JSON.stringify(expenses));
-      const total = expenses.reduce((sum, e) => sum + parseFloat(e.amount), 0);
-      localStorage.setItem('totalExpenses', total);
-      totalSummary.textContent = `₹${total.toFixed(2)}`;
     }
-
+  
+    function filterExpenses() {
+      const now = new Date();
+      const startOfWeek = new Date(); startOfWeek.setDate(now.getDate() - now.getDay());
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  
+      return expenses.filter(e => {
+        const d = new Date(e.date);
+        if (currentFilter === 'weekly') return d >= startOfWeek;
+        if (currentFilter === 'monthly') return d >= startOfMonth;
+        if (currentFilter === 'voice') return e.source === 'voice';
+        return true;
+      });
+    }
+  
     function renderExpenses() {
       expenseList.innerHTML = '';
-      expenses.forEach((e, index) => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${e.date}</td>
-          <td>${e.description}</td>
-          <td>${e.category}</td>
-          <td>₹${e.amount}</td>
-          <td><button class="btn-delete" onclick="deleteExpense(${index})">Delete</button></td>
-        `;
-        expenseList.appendChild(row);
+      const filtered = filterExpenses();
+      const grouped = filtered.reduce((acc, e) => {
+        (acc[e.date] = acc[e.date] || []).push(e);
+        return acc;
+      }, {});
+  
+      let overallTotal = 0;
+      let categoryTotals = {};
+  
+      Object.keys(grouped).sort((a, b) => new Date(b) - new Date(a)).forEach(date => {
+        const dayArr = grouped[date];
+        const dayTotal = dayArr.reduce((sum, e) => sum + parseFloat(e.amount), 0);
+        overallTotal += dayTotal;
+  
+        const hdr = document.createElement('tr');
+        hdr.innerHTML = `<td colspan="5" style="background:#2c2c2c;color:#fff;font-weight:bold;">${date} — Total: ₹${dayTotal.toFixed(2)}</td>`;
+        expenseList.appendChild(hdr);
+  
+        dayArr.forEach((e, idx) => {
+          categoryTotals[e.category] = (categoryTotals[e.category] || 0) + parseFloat(e.amount);
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${e.date}</td>
+            <td>${e.description}</td>
+            <td>${e.category}</td>
+            <td>₹${parseFloat(e.amount).toFixed(2)}</td>
+            <td><button class="btn-delete" onclick="deleteExpense(${expenses.indexOf(e)})">Delete</button></td>
+          `;
+          expenseList.appendChild(row);
+        });
       });
+  
+      totalSummary.textContent = `₹${overallTotal.toFixed(2)}`;
+      drawCategoryChart(categoryTotals);
+    }
+  
+    function deleteExpense(idx) {
+      if (!confirm('Delete this expense?')) return;
+      expenses.splice(idx, 1);
       saveExpenses();
-    }
-
-    function deleteExpense(index) {
-      if (confirm("Are you sure you want to delete this expense?")) {
-        expenses.splice(index, 1);
-        renderExpenses();
-      }
-    }
-
-    document.getElementById('showFormBtn').onclick = () => {
-      document.getElementById('expenseForm').style.display = 'block';
-    };
-
-    expenseForm.onsubmit = function (e) {
-      e.preventDefault();
-
-      const date = document.getElementById('date').value;
-      const description = document.getElementById('description').value;
-      const category = document.getElementById('category').value;
-      const amount = document.getElementById('amount').value;
-
-      if (!date || !description || !category || !amount) return;
-
-      const expense = { date, description, category, amount };
-      expenses.push(expense);
       renderExpenses();
-
-      expenseForm.reset();
-      document.getElementById('expenseForm').style.display = 'none';
+    }
+  
+    document.getElementById('showFormBtn').onclick = () => document.getElementById('expenseForm').style.display = 'block';
+  
+    expenseFormEl.onsubmit = e => {
+      e.preventDefault();
+      const dateEl = document.getElementById('date');
+      const descriptionEl = document.getElementById('description');
+      const categoryEl = document.getElementById('category');
+      const amountEl = document.getElementById('amount');
+  
+      const date = dateEl.value;
+      const description = descriptionEl.value;
+      const category = categoryEl.value;
+      const amount = amountEl.value;
+  
+      if (!date || !description || !category || !amount) return;
+  
+      expenses.push({ date, description, category, amount, source: 'manual' });
+      saveExpenses();
+      renderExpenses();
+  
+      descriptionEl.value = '';
+      categoryEl.selectedIndex = 0;
+      amountEl.value = '';
     };
-
+  
+    function filterView(type) { 
+      currentFilter = type;
+      renderExpenses();
+    }
+  
+    function drawCategoryChart(data) {
+      const ctx = document.getElementById('categoryChart');
+      if (window.categoryChart) window.categoryChart.destroy();
+      window.categoryChart = new Chart(ctx, {
+        type: 'pie',
+        data: { labels: Object.keys(data), datasets: [{ data: Object.values(data), backgroundColor: ['#f44336','#2196f3','#ffeb3b','#4caf50','#ff9800','#9c27b0','#607d8b'] }] },
+        options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+      });
+    }
+  
+    function exportExcel() {
+      const wb = XLSX.utils.table_to_book(document.getElementById('expenseTable'), { sheet: 'Expenses' });
+      XLSX.writeFile(wb, 'Pockify_Expenses.xlsx');
+    }
+  
+    function exportPDF() {
+      html2canvas(document.querySelector('main')).then(canvas => {
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jspdf.jsPDF();
+        const props = pdf.getImageProperties(imgData);
+        const w = pdf.internal.pageSize.getWidth();
+        const h = (props.height * w) / props.width;
+        pdf.addImage(imgData, 'PNG', 0, 0, w, h);
+        pdf.save('Pockify_Expenses.pdf');
+      });
+    }
+  
     renderExpenses();
   </script>
+  
 </body>
 </html>
