@@ -6,8 +6,6 @@
   <title>Pockify - Split</title>
   <link rel="stylesheet" href="style.css" />
   <style>
-    
-    
     .menu-toggle {
       display: none;
       position: fixed;
@@ -29,6 +27,7 @@
       }
 
       .container {
+        display: flex;
         flex-direction: column;
       }
 
@@ -86,6 +85,47 @@
         color: #ccc;
       }
     }
+
+    .btn-primary {
+      background-color: #1886c1;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .btn-primary:hover {
+      background-color: #156a97;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .form-row input {
+      padding: 10px;
+      font-size: 14px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      width: 100%;
+    }
+
+    .delete-btn {
+      background-color: #e74c3c;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .delete-btn:hover {
+      background-color: #c0392b;
+    }
   </style>
 </head>
 <body>
@@ -96,22 +136,22 @@
     <aside class="sidebar">
       <div class="profile">
         <img src="shiva.jpg" alt="Profile Photo" />
-        <h3>Shivakant Mishra</h3>
+        <h3></h3>
       </div>
       <nav class="nav">
         <a href="index1.html">🏠 Home</a>
-        <a href="expenses.html" >💸 Expenses</a>
+        <a href="expenses.html">💸 Expenses</a>
         <a href="#" class="active">🔀 Split</a>
         <a href="setting.html">⚙️ Settings</a>
         <a href="support.html">🛠️ Support</a>
-        <a href="assistant.html" >🤖 Ai Assist</a>
+        <a href="assistant.html">🤖 Ai Assist</a>
         <a href="login.html">🚪 Logout</a>
       </nav>
       <div class="logo">POCKIFY</div>
     </aside>
 
     <main class="main">
-      <h1>Split an Expense</h1>
+      <h1>Split</h1>
 
       <div class="expense-form">
         <form id="splitForm">
@@ -148,7 +188,6 @@
         <ul id="splitHistory" style="margin-top: 10px;"></ul>
       </div>
     </main>
-
   </div>
 
   <script>
@@ -326,6 +365,11 @@
         alert("Notification permission was previously denied.");
       }
     }
+
+    function toggleSidebar() {
+      const sidebar = document.querySelector('.sidebar');
+      sidebar.classList.toggle('show');
+    }
   
     window.onload = () => {
       renderSplitHistory();
@@ -333,6 +377,5 @@
       addPerson();
     };
   </script>
-  
 </body>
 </html>
