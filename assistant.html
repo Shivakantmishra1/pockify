@@ -238,7 +238,8 @@
     </main>
   </div>
 
-  <script>
+  <script>                                    
+
   function toggleSidebar() {
     document.getElementById("sidebar").classList.toggle("show");
   }
@@ -269,7 +270,14 @@
     }
   }
 
-  // Save expense to localStorage in a unified format
+  // ✅ Add this function to enable spoken replies
+  function speak(message) {
+    const synth = window.speechSynthesis;
+    const utter = new SpeechSynthesisUtterance(message);
+    utter.lang = 'en-IN';
+    synth.speak(utter);
+  }
+
   function parseExpense(input) {
     const amountMatch = input.match(/\d+/);
     const categoryMatch = input.match(/for\s+(.+)/i);
@@ -281,21 +289,19 @@
         amount,
         category,
         date: new Date().toISOString(),
-        source: 'voice',  // Helps you track if the expense was added via voice
+        source: 'voice',
       };
 
-      // Get all existing expenses
       const expenses = JSON.parse(localStorage.getItem('expenses') || '[]');
       expenses.push(expense);
-      
-      // Save back to localStorage
       localStorage.setItem('expenses', JSON.stringify(expenses));
 
       document.getElementById("parsed-output").innerHTML =
         `<strong>Expense Saved</strong><br>Amount: ₹${amount}<br>Category: ${category}`;
       
-      speak(`✅ Expense of ₹${amount} for ${category} saved successfully!`);
-      loadExpenses();  // Update the expense list on the voice assistant page
+      const message = `✅ Expense of ₹${amount} for ${category} saved successfully!`;
+      speak(message);
+      loadExpenses();
     } else {
       const error = "⚠️ Could not understand the expense.";
       document.getElementById("parsed-output").textContent = error;
@@ -303,36 +309,48 @@
     }
   }
 
-  // Load expenses from localStorage
   function loadExpenses() {
     const expenseList = document.getElementById("expense-list");
     expenseList.innerHTML = '';
 
-    // Get all expenses from localStorage
     const expenses = JSON.parse(localStorage.getItem('expenses') || '[]');
     
-    expenses.reverse().forEach((expense, index) => {
-      const { amount, category, date } = expense;
-      const li = document.createElement("li");
-      li.innerHTML = `
-        <span>₹${amount}</span> for <strong>${category}</strong>
-        <small>(${new Date(date).toLocaleString()})</small>
-        <button onclick="deleteExpense(${index})" style="margin-left:10px; background:black; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">🗑️ Delete</button>
-      `;
-      expenseList.appendChild(li);
-    });
+    if (expenses.length > 0) {
+      expenses.reverse().forEach((expense, index) => {
+        const { amount, category, date } = expense;
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <span>₹${amount}</span> for <strong>${category}</strong>
+          <small>(${new Date(date).toLocaleString()})</small>
+          <button onclick="deleteExpense(${index})" style="margin-left:10px; background:black; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">🗑️ Delete</button>
+        `;
+        expenseList.appendChild(li);
+      });
+      
+      // Announce the loaded expenses
+      speak(`There are ${expenses.length} expenses loaded.`);
+    } else {
+      speak("No expenses found.");
+    }
   }
 
-  // Delete expense
   function deleteExpense(index) {
     let expenses = JSON.parse(localStorage.getItem('expenses') || '[]');
-    expenses.splice(expenses.length - 1 - index, 1); // because we reversed
+    const deletedExpense = expenses.splice(expenses.length - 1 - index, 1)[0]; // Capture the deleted expense
+
     localStorage.setItem('expenses', JSON.stringify(expenses));
+
+    // Speak confirmation
+    const message = `✅ Expense of ₹${deletedExpense.amount} for ${deletedExpense.category} deleted successfully!`;
+    speak(message);
+
+    // Reload expenses
     loadExpenses();
   }
 
-  // On page load, load all expenses
   window.onload = loadExpenses;
+
+
 
   </script>
 </body>
